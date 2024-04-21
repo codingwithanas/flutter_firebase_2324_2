@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_firebase_2324/auth/servei_auth.dart';
 import 'package:flutter_firebase_2324/chat/servei_chat.dart';
 import 'package:flutter_firebase_2324/components/bombolla_missatge.dart';
+import 'package:intl/intl.dart';
 
 class PaginaChat extends StatefulWidget {
-
   final String emailAmbQuiParlem;
   final String idReceptor;
 
@@ -20,7 +20,6 @@ class PaginaChat extends StatefulWidget {
 }
 
 class _PaginaChatState extends State<PaginaChat> {
-
   final TextEditingController controllerMissatge = TextEditingController();
   final ScrollController controllerScroll = ScrollController();
 
@@ -32,7 +31,6 @@ class _PaginaChatState extends State<PaginaChat> {
 
   @override
   void dispose() {
-
     focusNode.dispose();
     controllerMissatge.dispose();
 
@@ -43,41 +41,36 @@ class _PaginaChatState extends State<PaginaChat> {
   void initState() {
     super.initState();
 
-    focusNode.addListener(() { 
+    focusNode.addListener(() {
       Future.delayed(
         const Duration(milliseconds: 500),
-        () => ferScrollCapAvall(), 
+        () => ferScrollCapAvall(),
       );
     });
 
     // Ens esperem un moment, i llavors movem cap a baix.
     Future.delayed(
       const Duration(milliseconds: 500),
-      () => ferScrollCapAvall(), 
+      () => ferScrollCapAvall(),
     );
   }
 
   void ferScrollCapAvall() {
-
     controllerScroll.animateTo(
-      controllerScroll.position.maxScrollExtent, 
-      duration: const Duration(seconds: 1), 
-      curve: Curves.fastOutSlowIn, 
+      controllerScroll.position.maxScrollExtent,
+      duration: const Duration(seconds: 1),
+      curve: Curves.fastOutSlowIn,
     );
   }
 
   void enviarMissatge() async {
-
     if (controllerMissatge.text.isNotEmpty) {
-
       // Enviar el missatge.
       await _serveiChat.enviarMissatge(
-        widget.idReceptor, 
-        controllerMissatge.text);
+          widget.idReceptor, controllerMissatge.text);
 
       // Netejar el camp.
       controllerMissatge.clear();
-
     }
     ferScrollCapAvall();
   }
@@ -103,13 +96,11 @@ class _PaginaChatState extends State<PaginaChat> {
   }
 
   Widget _construirLlistaMissatges() {
-
     String idUsuariActual = _serveiAuth.getUsuariActual()!.uid;
 
     return StreamBuilder(
-      stream: _serveiChat.getMissatges(idUsuariActual, widget.idReceptor), 
-      builder: (context, snapshot){
-
+      stream: _serveiChat.getMissatges(idUsuariActual, widget.idReceptor),
+      builder: (context, snapshot) {
         // Cas que hi hagi error.
         if (snapshot.hasError) {
           return const Text("Error carregant missatges.");
@@ -123,15 +114,27 @@ class _PaginaChatState extends State<PaginaChat> {
         // Retornar dades (ListView).
         return ListView(
           controller: controllerScroll,
-          children: snapshot.data!.docs.map((document) => _construirItemMissatge(document)).toList(),
+          children: snapshot.data!.docs
+              .map((document) => _construirItemMissatge(document))
+              .toList(),
         );
-
       },
     );
   }
 
-  Widget _construirItemMissatge(DocumentSnapshot documentSnapshot){
+  String calcularTiempoTranscurrido(Timestamp timestamp) {
+  DateTime fechaMensaje = timestamp.toDate();
+  DateTime ahora = DateTime.now();
+  Duration diferencia = ahora.difference(fechaMensaje);
 
+  if (diferencia.inDays == 0) {
+    return DateFormat('HH:mm').format(fechaMensaje);
+  } else {
+    return 'Fa ${diferencia.inDays} dia${diferencia.inDays == 1 ? '' : 's'}';
+  }
+}
+
+  Widget _construirItemMissatge(DocumentSnapshot documentSnapshot) {
     // final data = document... (altra opció).
     Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
 
@@ -141,13 +144,17 @@ class _PaginaChatState extends State<PaginaChat> {
     bool esUsuariActual = data["idAutor"] == _serveiAuth.getUsuariActual()!.uid;
 
     // (Operador ternari).
-    var aliniament = esUsuariActual ? Alignment.centerRight : Alignment.centerLeft;
+    var aliniament =
+        esUsuariActual ? Alignment.centerRight : Alignment.centerLeft;
     var colorBombolla = esUsuariActual ? Colors.green[200] : Colors.amber[200];
+    String tiempoTranscurrido = calcularTiempoTranscurrido(data["timestamp"]);
+
     return Container(
       alignment: aliniament,
       child: BombollaMissatge(
-        colorBombolla: colorBombolla??Colors.black,
+        colorBombolla: colorBombolla ?? Colors.black,
         missatge: data["missatge"],
+        tiempo: tiempoTranscurrido,
       ),
     );
   }
@@ -167,14 +174,16 @@ class _PaginaChatState extends State<PaginaChat> {
               ),
             ),
           ),
-          const SizedBox(width: 10,),
+          const SizedBox(
+            width: 10,
+          ),
           IconButton(
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(Colors.green),
             ),
             icon: const Icon(Icons.send),
             color: Colors.white,
-            onPressed: enviarMissatge, 
+            onPressed: enviarMissatge,
           ),
         ],
       ),
