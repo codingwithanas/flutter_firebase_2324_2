@@ -123,39 +123,44 @@ class _PaginaChatState extends State<PaginaChat> {
   }
 
   String calcularTiempoTranscurrido(Timestamp timestamp) {
-  DateTime fechaMensaje = timestamp.toDate();
-  DateTime ahora = DateTime.now();
-  Duration diferencia = ahora.difference(fechaMensaje);
+    DateTime fechaMensaje = timestamp.toDate();
+    DateTime ahora = DateTime.now();
+    Duration diferencia = ahora.difference(fechaMensaje);
 
-  if (diferencia.inDays == 0) {
-    return DateFormat('HH:mm').format(fechaMensaje);
-  } else {
-    return 'Fa ${diferencia.inDays} dia${diferencia.inDays == 1 ? '' : 's'}';
+    if (diferencia.inDays == 0) {
+      return DateFormat('HH:mm').format(fechaMensaje);
+    } else {
+      return 'Fa ${diferencia.inDays} dia${diferencia.inDays == 1 ? '' : 's'}';
+    }
   }
-}
 
   Widget _construirItemMissatge(DocumentSnapshot documentSnapshot) {
-    // final data = document... (altra opció).
     Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-
-    // Saber si el mostrem a l'esquerra o a la dreta.
-
-    // Si és usuari acutal.
     bool esUsuariActual = data["idAutor"] == _serveiAuth.getUsuariActual()!.uid;
 
-    // (Operador ternari).
-    var aliniament =
-        esUsuariActual ? Alignment.centerRight : Alignment.centerLeft;
-    var colorBombolla = esUsuariActual ? Colors.green[200] : Colors.amber[200];
+    Color colorBombolla =
+        esUsuariActual ? Colors.green[200]! : Colors.amber[200]!;
     String tiempoTranscurrido = calcularTiempoTranscurrido(data["timestamp"]);
 
-    return Container(
-      alignment: aliniament,
-      child: BombollaMissatge(
-        colorBombolla: colorBombolla ?? Colors.black,
-        missatge: data["missatge"],
-        tiempo: tiempoTranscurrido,
-      ),
+    return Column(
+      crossAxisAlignment:
+          esUsuariActual ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        BombollaMissatge(
+          colorBombolla: colorBombolla,
+          missatge: data["missatge"],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 2.0, right: 8.0, left: 8.0),
+          child: Text(
+            tiempoTranscurrido,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
