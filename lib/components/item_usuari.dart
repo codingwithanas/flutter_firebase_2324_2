@@ -1,16 +1,28 @@
-
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
-class ItemUsuari extends StatelessWidget {
+Future<String?> getUrlImatgePerfil(String uid) async {
+  try {
+    final Reference ref =
+        FirebaseStorage.instance.ref().child("$uid/avatar/$uid");
+    final String urlImatge = await ref.getDownloadURL();
+    return urlImatge;
+  } catch (e) {
+    return null;
+  }
+}
 
+class ItemUsuari extends StatelessWidget {
+  final String uid;
   final String emailUsuari;
   final void Function()? onTap;
 
   const ItemUsuari({
-    super.key,
+    Key? key,
+    required this.uid,
     required this.emailUsuari,
     required this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +40,27 @@ class ItemUsuari extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            const Icon(Icons.person),
-            const SizedBox(width: 10,),
+            FutureBuilder<String?>(
+              future: getUrlImatgePerfil(uid),
+              builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    return Container(
+                      width: 50, 
+                      height: 50,
+                      child: Image.network(snapshot.data!, fit: BoxFit.cover),
+                    );
+                  } else {
+                    return Icon(Icons.person);
+                  }
+                }
+              },
+            ),
+            const SizedBox(
+              width: 10,
+            ),
             Text(emailUsuari),
           ],
         ),

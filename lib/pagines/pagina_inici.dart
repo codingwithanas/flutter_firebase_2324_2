@@ -72,25 +72,24 @@ class PaginaInici extends StatelessWidget {
     );
   }
 
-  Widget _construeixItemUsuari(Map<String, dynamic> dadesUsuari, BuildContext context) {
-
-    if (dadesUsuari["email"] == _serveiAuth.getUsuariActual()!.email) {
-
-      return Container();
-    }
-    return ItemUsuari(
-      emailUsuari: dadesUsuari["email"],
-      onTap: (){
-        Navigator.push(
-          context, 
-          MaterialPageRoute(
-            builder: (context) => PaginaChat(
-              emailAmbQuiParlem: dadesUsuari["email"],
-              idReceptor: dadesUsuari["uid"],
-            ),
-          ),
-        );
-      },
-    );//Text(dadesUsuari["email"]);
+Widget _construeixItemUsuari(Map<String, dynamic> dadesUsuari, BuildContext context) {
+  if (dadesUsuari["email"] == _serveiAuth.getUsuariActual()!.email) {
+    return Container();
   }
+  return ItemUsuari(
+    uid: dadesUsuari["uid"], // Add this line
+    emailUsuari: dadesUsuari["email"],
+    onTap: (){
+      Navigator.push(
+        context, 
+        MaterialPageRoute(
+          builder: (context) => PaginaChat(
+            emailAmbQuiParlem: dadesUsuari["email"],
+            idReceptor: dadesUsuari["uid"],
+          ),
+        ),
+      );
+    },
+  );
+}
 }
