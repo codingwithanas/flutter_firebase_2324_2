@@ -55,6 +55,12 @@ class _PaginaChatState extends State<PaginaChat> {
     );
   }
 
+  Future<String> getNomUsuari(String uid) async {
+    final doc =
+        await FirebaseFirestore.instance.collection('Usuaris').doc(uid).get();
+    return doc['nom'] ?? '';
+  }
+
   void ferScrollCapAvall() {
     controllerScroll.animateTo(
       controllerScroll.position.maxScrollExtent,
@@ -77,21 +83,34 @@ class _PaginaChatState extends State<PaginaChat> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.emailAmbQuiParlem),
-      ),
-      body: Column(
-        children: [
-          // Zona missatges.
-          Expanded(
-            child: _construirLlistaMissatges(),
-          ),
-
-          // Zona escriure missatge.
-          _construirZonaInputUsuari(),
-        ],
-      ),
+    return FutureBuilder<String>(
+      future: getNomUsuari(widget.idReceptor), 
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+              body: Center(
+                  child:
+                      CircularProgressIndicator())); 
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(snapshot.data ??
+                  widget
+                      .emailAmbQuiParlem), 
+            ),
+            body: Column(
+              children: [
+                // Zona missatges.
+                Expanded(
+                  child: _construirLlistaMissatges(),
+                ),
+                // Zona escriure missatge.
+                _construirZonaInputUsuari(),
+              ],
+            ),
+          );
+        }
+      },
     );
   }
 

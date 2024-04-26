@@ -23,6 +23,12 @@ class _EditarDadesUsuariState extends State<EditarDadesUsuari> {
   final _auth = FirebaseAuth.instance;
   final _db = FirebaseFirestore.instance;
 
+  @override
+  void initState() {
+    super.initState();
+    _carregarDadesUsuari();
+  }
+
   Future<void> _carregarDadesUsuari() async {
     final usuari = _auth.currentUser;
     if (usuari != null) {

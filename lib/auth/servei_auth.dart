@@ -13,12 +13,18 @@ class ServeiAuth {
         password: password,
       );
 
+      final QuerySnapshot result = await _firestore
+          .collection('Usuaris')
+          .where('email', isEqualTo: email)
+          .get();
+      if (result.docs.isEmpty) {
+
       _firestore.collection("Usuaris").doc(credencialUsuari.user!.uid).set({
         "uid": credencialUsuari.user!.uid,
         "email": email,
         "nom": "",
       });
-
+      }
       return credencialUsuari;
     } on FirebaseAuthException catch (e) {
       throw Exception(e.code);
